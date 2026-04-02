@@ -16,7 +16,6 @@
             --apple-bg: #000000;
             --apple-card: #1c1c1e;
             --apple-card-hover: #2c2c2e;
-            --apple-gold: #d4af37;
             --apple-text: #ffffff;
             --apple-gray: #86868b;
         }
@@ -27,10 +26,9 @@
             font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
             margin: 0;
             -webkit-font-smoothing: antialiased;
-            overflow-x: hidden;
         }
 
-        /* 價格閃爍特效 */
+        /* 價格閃爍特效 - 純 CSS 動畫 */
         @keyframes flashGreen {
             0% { color: #22c55e; text-shadow: 0 0 20px rgba(34, 197, 94, 0.6); transform: scale(1.05); }
             100% { color: inherit; text-shadow: none; transform: scale(1); }
@@ -64,12 +62,12 @@
             -webkit-text-fill-color: transparent;
         }
 
-        /* 隱藏滾動條但保持功能 */
+        /* 隱藏滾動條 */
         .no-scrollbar::-webkit-scrollbar { display: none; }
         .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
 
-        /* 圖片光澤效果 */
-        .img-glossy::after {
+        /* 圖片光澤 */
+        .img-container::after {
             content: "";
             position: absolute;
             top: 0; left: 0; right: 0; bottom: 0;
@@ -101,7 +99,7 @@
 
         <!-- Bento Grid Container -->
         <div id="bento-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-8">
-            <!-- JavaScript 將在此動態生成卡片 -->
+            <!-- JavaScript 將在此動態生成卡片，不使用 JSX -->
             <div class="col-span-full text-center py-20">
                 <div class="inline-block animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-blue-500"></div>
                 <p class="mt-4 text-gray-500 font-medium">正在連接 TCG 數據庫...</p>
@@ -115,7 +113,7 @@
                 <svg id="toggle-icon" class="w-5 h-5 transition-transform duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
             </button>
             <div id="list-view" class="mt-8 space-y-4 hidden">
-                <!-- 其餘排名 -->
+                <!-- 其餘排名由 JS 填入 -->
             </div>
         </div>
     </div>
@@ -125,7 +123,7 @@
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, onSnapshot, query, orderBy } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        // --- Firebase 配置 (使用你的真實數據) ---
+        // --- Firebase 配置 ---
         const firebaseConfig = {
             apiKey: "AIzaSyDSwhKXm7KqaHVO2kb2PQ6qmarySPcZyJ0",
             authDomain: "gen-lang-client-0326385388.firebaseapp.com",
@@ -145,8 +143,8 @@
         // 格式化價格
         const formatHKD = (val) => new Intl.NumberFormat('zh-HK', { style: 'currency', currency: 'HKD', minimumFractionDigits: 0 }).format(val || 0);
 
-        // 渲染函數
-        function updateUI(products) {
+        // 渲染函數 (Vanilla JS)
+        function renderUI(products) {
             const grid = document.getElementById('bento-grid');
             const listView = document.getElementById('list-view');
             const expandContainer = document.getElementById('expand-container');
@@ -159,10 +157,10 @@
             const others = products.slice(3);
 
             // --- 渲染 NO.1 (大卡片) ---
-            let html = `
+            let gridHtml = `
                 <div class="col-span-1 sm:col-span-2 bento-card p-8 sm:p-12 flex flex-col md:flex-row gap-8 sm:gap-16 items-center">
                     <div class="absolute -top-10 -left-10 text-[12rem] opacity-[0.03] font-black italic select-none">01</div>
-                    <div class="w-full md:w-72 aspect-[3/4] shrink-0 rounded-[2rem] overflow-hidden shadow-2xl border border-white/10 relative img-glossy">
+                    <div class="w-full md:w-72 aspect-[3/4] shrink-0 rounded-[2rem] overflow-hidden shadow-2xl border border-white/10 relative img-container">
                         <img src="${top1.image_url}" class="w-full h-full object-cover" referrerPolicy="no-referrer">
                     </div>
                     <div class="flex-1 text-center md:text-left">
@@ -170,7 +168,7 @@
                         <h2 class="text-6xl sm:text-8xl font-black tracking-tighter mb-4">NO.1</h2>
                         <h3 class="text-2xl sm:text-4xl font-bold mb-8 leading-tight">
                             ${top1.name_zh}
-                            <span class="block text-lg text-gray-500 mt-2 font-medium">[${top1.set_name || 'Premium Collection'}]</span>
+                            <span class="block text-lg text-gray-500 mt-2 font-medium">[${top1.set_name || 'TCG'}]</span>
                         </h3>
                         <div class="flex flex-wrap justify-center md:justify-start items-baseline gap-6">
                             <span class="text-4xl sm:text-6xl font-black tracking-tighter ${top1.market_data?.change_24h?.startsWith('+') ? 'text-green-400' : 'text-red-400'}">
@@ -184,13 +182,13 @@
                 </div>
             `;
 
-            // --- 渲染 NO.2 & NO.3 (兩欄並列) ---
+            // --- 渲染 NO.2 & NO.3 (兩欄) ---
             [top2, top3].forEach((card, idx) => {
                 if (!card) return;
-                html += `
+                gridHtml += `
                     <div class="bento-card p-8 flex gap-6 items-center">
                         <div class="absolute top-4 right-8 text-6xl opacity-[0.03] font-black italic">0${idx + 2}</div>
-                        <div class="w-24 sm:w-32 aspect-[3/4] shrink-0 rounded-2xl overflow-hidden shadow-xl border border-white/10 img-glossy">
+                        <div class="w-24 sm:w-32 aspect-[3/4] shrink-0 rounded-2xl overflow-hidden shadow-xl border border-white/10 img-container">
                             <img src="${card.image_url}" class="w-full h-full object-cover" referrerPolicy="no-referrer">
                         </div>
                         <div class="flex-1">
@@ -207,7 +205,7 @@
                 `;
             });
 
-            grid.innerHTML = html;
+            grid.innerHTML = gridHtml;
 
             // --- 渲染其餘列表 ---
             if (others.length > 0) {
@@ -236,14 +234,14 @@
                 listView.innerHTML = listHtml;
             }
 
-            // 價格閃爍檢查
+            // 檢查價格變動並觸發閃爍
             products.forEach(p => {
                 const currentPrice = p.market_data?.snkrdunk_price;
                 if (lastPrices[p.id] !== undefined && lastPrices[p.id] !== currentPrice) {
                     const el = document.getElementById(`price-${p.id}`);
                     if (el) {
                         el.classList.remove('price-flash');
-                        void el.offsetWidth; // Trigger reflow
+                        void el.offsetWidth; // 強制重繪
                         el.classList.add('price-flash');
                     }
                 }
@@ -251,14 +249,14 @@
             });
         }
 
-        // 監聽數據
+        // 監聽數據庫
         const q = query(collection(db, "products"), orderBy("rank", "asc"));
         onSnapshot(q, (snapshot) => {
             const data = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            updateUI(data);
+            renderUI(data);
         });
 
-        // 展開邏輯
+        // 展開/收起邏輯
         document.getElementById('toggle-list').addEventListener('click', () => {
             isExpanded = !isExpanded;
             const listView = document.getElementById('list-view');
