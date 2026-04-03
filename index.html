@@ -3,12 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>TCG INVEST | 實時價格與情報監控</title>
+    <title>TCG INVEST | 實時監控中心</title>
     
-    <!-- Google Fonts: Inter -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
-    
-    <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     
     <style>
@@ -18,7 +15,6 @@
             --apple-card-hover: #2c2c2e;
             --apple-gold: #d4af37;
             --apple-text: #ffffff;
-            --apple-gray: #86868b;
             --apple-green: #34c759;
         }
 
@@ -30,10 +26,9 @@
             -webkit-font-smoothing: antialiased;
         }
 
-        /* Bento Grid 高級感 */
         .bento-card {
             background-color: var(--apple-card);
-            border-radius: 2.5rem; /* rounded-3xl */
+            border-radius: 2.5rem;
             border: 1px solid rgba(255, 255, 255, 0.05);
             transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
             overflow: hidden;
@@ -44,37 +39,26 @@
             transform: translateY(-5px);
             background-color: var(--apple-card-hover);
             box-shadow: 0 20px 40px rgba(0,0,0,0.5);
-            border-color: rgba(212, 175, 55, 0.2);
         }
 
-        /* 金色漸變文字 */
         .text-gold {
             background: linear-gradient(135deg, #f9d423 0%, #d4af37 100%);
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
-        /* 價格閃爍動畫 */
         @keyframes flashGreen {
-            0% { color: var(--apple-green); text-shadow: 0 0 15px rgba(52, 199, 89, 0.5); transform: scale(1.05); }
-            100% { color: inherit; text-shadow: none; transform: scale(1); }
+            0% { color: var(--apple-green); text-shadow: 0 0 15px rgba(52, 199, 89, 0.5); }
+            100% { color: inherit; text-shadow: none; }
         }
         .price-flash { animation: flashGreen 1.5s ease-out; }
 
-        /* 展開面板動畫 */
         #rank-list {
             transition: max-height 0.6s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease;
-            max-height: 0;
-            opacity: 0;
-            overflow: hidden;
+            max-height: 0; opacity: 0; overflow: hidden;
         }
-        #rank-list.expanded {
-            max-height: 2000px;
-            opacity: 1;
-            margin-top: 1.5rem;
-        }
+        #rank-list.expanded { max-height: 2000px; opacity: 1; margin-top: 1.5rem; }
 
-        /* AI 綠點動畫 */
         .ai-dot {
             width: 8px; height: 8px;
             background-color: var(--apple-green);
@@ -88,9 +72,6 @@
             50% { transform: scale(1.3); opacity: 0.5; }
             100% { transform: scale(1); opacity: 1; }
         }
-
-        /* 隱藏滾動條 */
-        .no-scrollbar::-webkit-scrollbar { display: none; }
     </style>
 </head>
 <body class="p-4 sm:p-8">
@@ -108,7 +89,7 @@
             </div>
         </header>
 
-        <!-- 🏆 價格排行榜 (Bento Grid) -->
+        <!-- 🏆 排行榜區 (Bento Grid) -->
         <section class="space-y-6">
             <div class="flex items-center gap-2 px-2">
                 <span class="text-xl">🏆</span>
@@ -116,7 +97,7 @@
             </div>
 
             <div id="leaderboard-grid" class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <!-- NO.1 巨圖卡片 -->
+                <!-- NO.1 巨圖 -->
                 <div id="no1-card" class="col-span-1 md:col-span-2">
                     <div class="bento-card p-8 sm:p-12 flex flex-col md:flex-row gap-8 items-center min-h-[450px]">
                         <div class="absolute -top-10 -left-10 text-[12rem] opacity-[0.03] font-black italic select-none">01</div>
@@ -128,12 +109,12 @@
                                 <span class="px-3 py-1 bg-blue-600 text-white text-[10px] font-black rounded-full uppercase tracking-widest">Market Leader</span>
                                 <span id="no1-source" class="text-[10px] font-bold text-gray-500 uppercase tracking-widest">---</span>
                             </div>
-                            <h3 id="no1-name" class="text-4xl sm:text-6xl font-black tracking-tighter leading-none">載入中...</h3>
+                            <h3 id="no1-name" class="text-4xl sm:text-6xl font-black tracking-tighter leading-none">同步中...</h3>
                             <div class="flex flex-wrap justify-center md:justify-start items-baseline gap-6">
                                 <span id="no1-price" class="text-5xl sm:text-7xl font-black text-gold tracking-tighter">HK$ --</span>
                                 <div class="flex items-center gap-2 text-green-400 font-black text-2xl">
                                     <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path fill-rule="evenodd" d="M5.293 9.707a1 1 0 010-1.414l4-4a1 1 0 011.414 0l4 4a1 1 0 01-1.414 1.414L11 7.414V15a1 1 0 11-2 0V7.414L6.707 9.707a1 1 0 01-1.414 0z" clip-rule="evenodd"></path></svg>
-                                    <span id="no1-change">+15.4%</span>
+                                    <span id="no1-change">+0.0%</span>
                                 </div>
                             </div>
                         </div>
@@ -168,38 +149,32 @@
             </div>
         </section>
 
-        <!-- 🏆 情報區 (實時管理版) -->
+        <!-- 🏆 情報區 (由小龍蝦控制) -->
         <section class="space-y-6">
             <div class="flex items-center gap-2 px-2">
                 <span class="text-xl">🔥</span>
                 <h2 class="text-xl font-bold tracking-tight">市場情報板塊</h2>
             </div>
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-                <!-- 情報文字：由 /setnews 控制 -->
                 <div class="bento-card p-8 bg-gradient-to-br from-blue-600 to-blue-400 !text-white">
                     <p class="text-xs font-bold uppercase tracking-widest opacity-80 mb-2">本週焦點情報</p>
                     <h3 id="news-content" class="text-xl font-bold leading-tight">正在同步 AI 情報...</h3>
                     <div class="mt-6 text-[10px] font-bold bg-white/20 w-fit px-2 py-1 rounded-full">AI 實時監控中</div>
                 </div>
-                <!-- 趨勢分析：由 /settrend 控制 -->
                 <div class="bento-card p-8 border-dashed border-2 border-white/10 flex flex-col justify-center">
                     <p class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">趨勢分析</p>
-                    <p id="trend-content" class="text-base font-semibold leading-snug">
-                        正在分析市場大數據...
-                    </p>
+                    <p id="trend-content" class="text-base font-semibold leading-snug">正在分析市場大數據...</p>
                 </div>
             </div>
         </section>
 
-        <!-- 展開面板 (NO.4 - NO.10) -->
+        <!-- 展開面板 -->
         <section>
-            <button id="expand-btn" class="w-full py-6 bento-card flex items-center justify-center gap-3 text-sm font-bold hover:bg-white/5 transition-all active:scale-95">
+            <button id="expand-btn" class="w-full py-6 bento-card flex items-center justify-center gap-3 text-sm font-bold hover:bg-white/5 transition-all">
                 <span>查看 NO.4 - NO.10 完整排行榜</span>
                 <svg id="expand-icon" class="w-5 h-5 transition-transform duration-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
             </button>
-            <div id="rank-list" class="space-y-3">
-                <!-- 由 JS 填充 -->
-            </div>
+            <div id="rank-list" class="space-y-3"></div>
         </section>
 
         <!-- 頁尾 -->
@@ -212,12 +187,10 @@
         </footer>
     </div>
 
-    <!-- Firebase SDK (Modular) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getFirestore, collection, query, orderBy, limit, onSnapshot, doc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-        // --- Firebase 配置 ---
         const firebaseConfig = {
             apiKey: "AIzaSyDSwhKXm7KqaHVO2kb2PQ6qmarySPcZyJ0",
             authDomain: "gen-lang-client-0326385388.firebaseapp.com",
@@ -228,40 +201,34 @@
         };
 
         const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app, "abcd"); // 指定 Database ID
+        const db = getFirestore(app, "abcd");
 
         let lastPrices = {};
-
         const formatHKD = (val) => new Intl.NumberFormat('zh-HK', { style: 'currency', currency: 'HKD', minimumFractionDigits: 0 }).format(val || 0);
 
-        // --- 1. 監聽卡片價格 (card_prices) ---
-        const q = query(collection(db, "card_prices"), orderBy("latest_price_hkd", "desc"), limit(10));
-        onSnapshot(q, (snapshot) => {
-            const cards = [];
-            snapshot.forEach(doc => cards.push({ id: doc.id, ...doc.data() }));
+        // 1. 監聽卡片價格
+        onSnapshot(query(collection(db, "card_prices"), orderBy("latest_price_hkd", "desc"), limit(10)), (snapshot) => {
+            const cards = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
             if (cards.length > 0) renderCards(cards);
         });
 
-        // --- 2. 監聽情報文字 (site_meta/headlines) ---
+        // 2. 監聽情報文字
         onSnapshot(doc(db, "site_meta", "headlines"), (docSnap) => {
             if (docSnap.exists()) {
-                const data = docSnap.data();
-                document.getElementById('news-content').innerText = data.content || "暫無最新情報";
-                document.getElementById('trend-content').innerText = data.trend || "市場分析更新中...";
+                document.getElementById('news-content').innerText = docSnap.data().content || "";
+                document.getElementById('trend-content').innerText = docSnap.data().trend || "";
             }
         });
 
         function renderCards(data) {
             const rankList = document.getElementById('rank-list');
-
-            // 更新 NO.1
             const c1 = data[0];
-            document.getElementById('no1-name').innerText = c1.card_name || '未知卡片';
+            document.getElementById('no1-name').innerText = c1.card_name;
             document.getElementById('no1-price').innerText = formatHKD(c1.latest_price_hkd);
-            document.getElementById('no1-img').src = c1.url || '';
-            document.getElementById('no1-source').innerText = c1.source || 'Market';
+            document.getElementById('no1-img').src = c1.url;
+            document.getElementById('no1-source').innerText = c1.source;
+            document.getElementById('no1-change').innerText = (c1.change_percent || '+0.0') + '%';
 
-            // 更新 NO.2 & NO.3
             if (data[1]) {
                 document.getElementById('no2-name').innerText = data[1].card_name;
                 document.getElementById('no2-price').innerText = formatHKD(data[1].latest_price_hkd);
@@ -273,7 +240,6 @@
                 document.getElementById('no3-img').src = data[2].url;
             }
 
-            // 更新其餘列表 (NO.4 - 10)
             let listHtml = "";
             data.slice(3, 10).forEach((c, i) => {
                 listHtml += `
@@ -285,37 +251,24 @@
                         </div>
                         <div class="text-right">
                             <p id="price-${c.id}" class="text-sm font-black text-[#d4af37]">${formatHKD(c.latest_price_hkd)}</p>
-                            <p class="text-[10px] font-bold text-[#34c759]">+0.0%</p>
                         </div>
-                    </div>
-                `;
+                    </div>`;
             });
             rankList.innerHTML = listHtml;
 
-            // 價格閃爍邏輯
             data.forEach(c => {
-                const currentPrice = c.latest_price_hkd;
-                if (lastPrices[c.id] !== undefined && lastPrices[c.id] !== currentPrice) {
-                    const elId = (c.id === data[0].id) ? 'no1-price' : `price-${c.id}`;
-                    const el = document.getElementById(elId);
-                    if (el) {
-                        el.classList.remove('price-flash');
-                        void el.offsetWidth; // 強制重繪
-                        el.classList.add('price-flash');
-                    }
+                if (lastPrices[c.id] !== undefined && lastPrices[c.id] !== c.latest_price_hkd) {
+                    const el = document.getElementById(c.id === data[0].id ? 'no1-price' : `price-${c.id}`);
+                    if (el) { el.classList.remove('price-flash'); void el.offsetWidth; el.classList.add('price-flash'); }
                 }
-                lastPrices[c.id] = currentPrice;
+                lastPrices[c.id] = c.latest_price_hkd;
             });
         }
 
-        // 展開邏輯
         const expandBtn = document.getElementById('expand-btn');
-        const rankListEl = document.getElementById('rank-list');
-        const expandIcon = document.getElementById('expand-icon');
-
         expandBtn.addEventListener('click', () => {
-            const isExpanded = rankListEl.classList.toggle('expanded');
-            expandIcon.style.transform = isExpanded ? 'rotate(180deg)' : 'rotate(0deg)';
+            const isExpanded = document.getElementById('rank-list').classList.toggle('expanded');
+            document.getElementById('expand-icon').style.transform = isExpanded ? 'rotate(180deg)' : 'rotate(0deg)';
             expandBtn.querySelector('span').innerText = isExpanded ? '收起排行榜' : '查看 NO.4 - NO.10 完整排行榜';
         });
     </script>
