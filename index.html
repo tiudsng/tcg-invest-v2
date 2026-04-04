@@ -4,67 +4,161 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>TCG INVEST | 實時監控中心</title>
+    
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800;900&display=swap" rel="stylesheet">
     <script src="https://cdn.tailwindcss.com"></script>
+    
     <style>
-        :root { --apple-bg: #000; --apple-card: #1c1c1e; --apple-gold: #d4af37; --apple-green: #34c759; }
-        body { background-color: var(--apple-bg); color: #fff; font-family: 'Inter', sans-serif; -webkit-font-smoothing: antialiased; }
-        .bento-card { background-color: var(--apple-card); border-radius: 2.5rem; border: 1px solid rgba(255,255,255,0.05); transition: all 0.5s ease; overflow: hidden; position: relative; }
-        .bento-card:hover { transform: translateY(-5px); background-color: #2c2c2e; }
-        .text-gold { background: linear-gradient(135deg, #f9d423 0%, #d4af37 100%); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
-        @keyframes flashGreen { 0% { color: var(--apple-green); text-shadow: 0 0 15px rgba(52,199,89,0.5); } 100% { color: inherit; text-shadow: none; } }
+        :root {
+            --apple-bg: #000000;
+            --apple-card: #1c1c1e;
+            --apple-card-hover: #2c2c2e;
+            --apple-gold: #d4af37;
+            --apple-text: #ffffff;
+            --apple-green: #34c759;
+        }
+
+        body {
+            background-color: var(--apple-bg);
+            color: var(--apple-text);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            margin: 0;
+            -webkit-font-smoothing: antialiased;
+            overflow-x: hidden;
+        }
+
+        /* Bento Grid 高級感 */
+        .bento-card {
+            background-color: var(--apple-card);
+            border-radius: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+            overflow: hidden;
+            position: relative;
+        }
+
+        .bento-card:hover {
+            transform: translateY(-5px);
+            background-color: var(--apple-card-hover);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+        }
+
+        /* 金色漸變文字 */
+        .text-gold {
+            background: linear-gradient(135deg, #f9d423 0%, #d4af37 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        /* 價格閃爍動畫 */
+        @keyframes flashGreen {
+            0% { color: var(--apple-green); text-shadow: 0 0 15px rgba(52, 199, 89, 0.5); }
+            100% { color: inherit; text-shadow: none; }
+        }
         .price-flash { animation: flashGreen 1.5s ease-out; }
-        #rank-list { transition: max-height 0.6s ease; max-height: 0; opacity: 0; overflow: hidden; }
-        #rank-list.expanded { max-height: 2000px; opacity: 1; margin-top: 1.5rem; }
+
+        /* 列表展開 */
+        #rank-list {
+            transition: max-height 0.6s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.4s ease;
+            max-height: 0; opacity: 0; overflow: hidden;
+        }
+        #rank-list.expanded { max-height: 2000px; opacity: 1; margin-top: 1rem; }
+
+        /* 隱藏滾動條但保留功能 */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+        .ai-dot {
+            width: 8px; height: 8px;
+            background-color: var(--apple-green);
+            border-radius: 50%;
+            display: inline-block;
+            box-shadow: 0 0 10px var(--apple-green);
+            animation: pulse-green 2s infinite;
+        }
+        @keyframes pulse-green {
+            0%, 100% { transform: scale(1); opacity: 1; }
+            50% { transform: scale(1.3); opacity: 0.5; }
+        }
     </style>
 </head>
 <body class="p-4 sm:p-8">
-    <div class="max-w-5xl mx-auto space-y-10">
+
+    <div class="max-w-6xl mx-auto space-y-10">
+        
+        <!-- 頂部導航 -->
         <header class="flex justify-between items-center py-4">
-            <h1 class="text-3xl font-black tracking-tighter italic">TCG INVEST</h1>
-            <div class="flex items-center gap-4 text-[10px] font-bold text-gray-500 uppercase tracking-widest">Live Monitoring</div>
+            <h1 class="text-2xl font-black tracking-tighter italic">TCG INVEST</h1>
+            <div class="flex items-center gap-3 text-[10px] font-bold text-gray-500 uppercase tracking-widest">
+                <span class="ai-dot"></span>Live Monitoring
+            </div>
         </header>
 
-        <!-- 排行榜區 -->
-        <section class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <div id="no1-card" class="col-span-1 md:col-span-2">
-                <div class="bento-card p-8 sm:p-12 flex flex-col md:flex-row gap-8 items-center min-h-[450px]">
-                    <img id="no1-img" src="" class="w-full md:w-72 aspect-[3/4] object-contain relative z-10 drop-shadow-2xl">
-                    <div class="flex-1 space-y-6 z-10 text-center md:text-left">
-                        <span class="px-3 py-1 bg-blue-600 text-[10px] font-black rounded-full uppercase tracking-widest">Market Leader</span>
-                        <h3 id="no1-name" class="text-4xl sm:text-6xl font-black tracking-tighter leading-none">同步中...</h3>
-                        <div class="flex flex-wrap justify-center md:justify-start items-baseline gap-6">
-                            <span id="no1-price" class="text-5xl sm:text-7xl font-black text-gold tracking-tighter">HK$ --</span>
-                            <span id="no1-change" class="text-green-400 font-black text-2xl">+0.0%</span>
+        <!-- 🏆 排行榜區 -->
+        <section class="space-y-6">
+            <div id="leaderboard-grid" class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- NO.1 巨圖 -->
+                <div class="md:col-span-2">
+                    <div class="bento-card p-6 sm:p-10 min-h-[380px] flex flex-row items-center gap-8">
+                        <div class="absolute -top-6 -left-6 text-[8rem] opacity-[0.03] font-black italic select-none">01</div>
+                        <div class="w-32 sm:w-56 aspect-[3/4] shrink-0 z-10">
+                            <img id="no1-img" src="" class="w-full h-full object-contain drop-shadow-2xl" referrerPolicy="no-referrer">
+                        </div>
+                        <div class="flex-1 space-y-4 z-10">
+                            <span class="px-2 py-0.5 bg-blue-600 text-white text-[8px] font-black rounded-full uppercase tracking-widest">Top Asset</span>
+                            <h3 id="no1-name" class="text-xl sm:text-3xl font-black tracking-tighter leading-tight">同步中...</h3>
+                            <p id="no1-price" class="text-4xl sm:text-6xl font-black text-gold tracking-tighter">HK$ --</p>
+                            <p class="text-green-400 font-black text-xl" id="no1-change">+0.0%</p>
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="bento-card p-6 flex items-center gap-6 h-full">
-                <img id="no2-img" src="" class="w-24 aspect-[3/4] object-contain">
-                <div class="flex-1"><span class="text-xs font-black opacity-20 block mb-1 uppercase">NO.2</span><h4 id="no2-name" class="font-bold text-sm truncate mb-2">---</h4><p id="no2-price" class="text-2xl font-black text-white">HK$ --</p></div>
-            </div>
-            <div class="bento-card p-6 flex items-center gap-6 h-full">
-                <img id="no3-img" src="" class="w-24 aspect-[3/4] object-contain">
-                <div class="flex-1"><span class="text-xs font-black opacity-20 block mb-1 uppercase">NO.3</span><h4 id="no3-name" class="font-bold text-sm truncate mb-2">---</h4><p id="no3-price" class="text-2xl font-black text-white">HK$ --</p></div>
+
+                <!-- 情報與分析 -->
+                <div class="md:col-span-1 flex flex-col gap-6">
+                    <div class="bento-card p-8 bg-gradient-to-br from-blue-600 to-blue-400 !text-white flex-1">
+                        <p class="text-[9px] font-black uppercase tracking-widest opacity-70 mb-2">焦點情報</p>
+                        <h3 id="news-content" class="text-base font-bold leading-snug">正在獲取實時情報...</h3>
+                    </div>
+                    <div class="bento-card p-8 border-dashed border-2 border-white/10 flex-1">
+                        <p class="text-[9px] font-black text-gray-500 uppercase tracking-widest mb-2">趨勢分析</p>
+                        <p id="trend-content" class="text-sm font-semibold leading-relaxed text-gray-300">正在分析市場數據...</p>
+                    </div>
+                </div>
             </div>
         </section>
 
-        <!-- 情報區 -->
-        <section class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            <div class="bento-card p-8 bg-gradient-to-br from-blue-600 to-blue-400 !text-white">
-                <p class="text-xs font-bold uppercase tracking-widest opacity-80 mb-2">本週焦點情報</p>
-                <h3 id="news-content" class="text-xl font-bold leading-tight">正在同步 AI 情報...</h3>
+        <!-- ✨ 最新上架 (New Arrivals) -->
+        <section class="space-y-4">
+            <div class="flex justify-between items-end px-2">
+                <div class="space-y-1">
+                    <h2 class="text-xl font-black tracking-tight">✨ 最新上架</h2>
+                    <p class="text-[10px] text-gray-500 font-bold uppercase tracking-widest">Recently Updated</p>
+                </div>
+                <button class="text-[10px] font-bold text-blue-500 uppercase tracking-widest">查看全部 ></button>
             </div>
-            <div class="bento-card p-8 border-dashed border-2 border-white/10 flex flex-col justify-center">
-                <p class="text-xs font-bold text-gray-500 uppercase tracking-widest mb-2">趨勢分析</p>
-                <p id="trend-content" class="text-base font-semibold leading-snug">正在分析市場大數據...</p>
+            
+            <div id="new-arrivals" class="flex gap-4 overflow-x-auto no-scrollbar pb-4 px-2">
+                <!-- 由 JS 填充 -->
             </div>
         </section>
 
-        <button id="expand-btn" class="w-full py-6 bento-card flex items-center justify-center gap-3 text-sm font-bold hover:bg-white/5 transition-all">查看完整排行榜 ⌄</button>
-        <div id="rank-list" class="space-y-3"></div>
-        <footer class="py-20 text-center opacity-30 text-[10px] font-bold tracking-widest uppercase">AI Driven by OpenClaw</footer>
+        <!-- 排名列表 (NO.2 - NO.10) -->
+        <section class="space-y-4">
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="bento-card p-6 flex flex-row items-center gap-4">
+                    <img id="no2-img" src="" class="w-16 aspect-[3/4] object-contain">
+                    <div class="flex-1"><span class="text-[8px] font-black opacity-20 block mb-1 uppercase">NO.2</span><h4 id="no2-name" class="font-bold text-xs truncate">---</h4><p id="no2-price" class="text-xl font-black text-white">HK$ --</p></div>
+                </div>
+                <div class="bento-card p-6 flex flex-row items-center gap-4">
+                    <img id="no3-img" src="" class="w-16 aspect-[3/4] object-contain">
+                    <div class="flex-1"><span class="text-[8px] font-black opacity-20 block mb-1 uppercase">NO.3</span><h4 id="no3-name" class="font-bold text-xs truncate">---</h4><p id="no3-price" class="text-xl font-black text-white">HK$ --</p></div>
+                </div>
+            </div>
+            <button id="expand-btn" class="w-full py-5 bento-card flex items-center justify-center gap-3 text-[10px] font-black uppercase tracking-widest hover:bg-white/5">查看 NO.4 - NO.10 排行榜 ⌄</button>
+            <div id="rank-list" class="grid grid-cols-1 sm:grid-cols-2 gap-3"></div>
+        </section>
+
+        <footer class="py-10 text-center opacity-20 text-[8px] font-bold tracking-widest uppercase">AI Driven by OpenClaw</footer>
     </div>
 
     <script type="module">
@@ -80,16 +174,25 @@
             appId: "1:122336191579:web:2de07c0acb51b8b24c8b7e" 
         };
         const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app, "abcd"); // 🚀 確保對接到 abcd 資料庫
+        const db = getFirestore(app, "abcd");
 
         let lastPrices = {};
         const formatHKD = (val) => new Intl.NumberFormat('zh-HK', { style: 'currency', currency: 'HKD', minimumFractionDigits: 0 }).format(val || 0);
+        const cleanText = (text) => text ? text.replace(/\\xe2\\x80\\x9c/g, '“').replace(/\\xe2\\x80\\x9d/g, '”').replace(/\\xe2\\x80\\x99/g, "’").replace(/\\/g, "").trim() : "";
 
+        // 1. 監聽排行榜 (按價格排序)
         onSnapshot(query(collection(db, "card_prices"), orderBy("latest_price_hkd", "desc"), limit(10)), (snapshot) => {
             const cards = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-            if (cards.length > 0) renderUI(cards);
+            if (cards.length > 0) renderLeaderboard(cards);
         });
 
+        // 2. 監聽最新上架 (按更新時間排序)
+        onSnapshot(query(collection(db, "card_prices"), orderBy("last_updated", "desc"), limit(8)), (snapshot) => {
+            const cards = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+            renderNewArrivals(cards);
+        });
+
+        // 3. 監聽情報
         onSnapshot(doc(db, "site_meta", "headlines"), (docSnap) => {
             if (docSnap.exists()) {
                 document.getElementById('news-content').innerText = docSnap.data().content || "";
@@ -97,27 +200,49 @@
             }
         });
 
-        function renderUI(data) {
-            document.getElementById('no1-name').innerText = data[0].card_name;
-            document.getElementById('no1-price').innerText = formatHKD(data[0].latest_price_hkd);
-            document.getElementById('no1-img').src = data[0].url;
-            document.getElementById('no1-change').innerText = (data[0].change_percent || '+0.0') + '%';
-            if (data[1]) { document.getElementById('no2-name').innerText = data[1].card_name; document.getElementById('no2-price').innerText = formatHKD(data[1].latest_price_hkd); document.getElementById('no2-img').src = data[1].url; }
-            if (data[2]) { document.getElementById('no3-name').innerText = data[2].card_name; document.getElementById('no3-price').innerText = formatHKD(data[2].latest_price_hkd); document.getElementById('no3-img').src = data[2].url; }
+        function renderLeaderboard(data) {
+            const rankList = document.getElementById('rank-list');
+            const c1 = data[0];
+            document.getElementById('no1-name').innerText = cleanText(c1.card_name);
+            document.getElementById('no1-price').innerText = formatHKD(c1.latest_price_hkd);
+            document.getElementById('no1-img').src = c1.url || "";
+            document.getElementById('no1-change').innerText = (c1.change_percent || '+0.0') + '%';
             
+            if (data[1]) {
+                document.getElementById('no2-name').innerText = cleanText(data[1].card_name);
+                document.getElementById('no2-price').innerText = formatHKD(data[1].latest_price_hkd);
+                document.getElementById('no2-img').src = data[1].url;
+            }
+            if (data[2]) {
+                document.getElementById('no3-name').innerText = cleanText(data[2].card_name);
+                document.getElementById('no3-price').innerText = formatHKD(data[2].latest_price_hkd);
+                document.getElementById('no3-img').src = data[2].url;
+            }
+
             let listHtml = "";
             data.slice(3).forEach((c, i) => {
-                listHtml += `<div class="bento-card p-5 flex items-center justify-between bg-white/5"><div class="flex items-center gap-4"><span class="text-xs font-black opacity-20 w-4">${i+4}</span><img src="${c.url}" class="w-10 h-10 object-contain"><p class="text-sm font-bold truncate w-32 sm:w-64">${c.card_name}</p></div><div class="text-right"><p id="price-${c.id}" class="text-sm font-black text-[#d4af37]">${formatHKD(c.latest_price_hkd)}</p></div></div>`;
+                listHtml += `<div class="bento-card p-4 flex flex-row items-center justify-between bg-white/5"><div class="flex items-center gap-3"><span class="text-[8px] font-black opacity-20 w-3">${i+4}</span><img src="${c.url}" class="w-8 h-8 object-contain"><p class="text-[10px] font-bold truncate w-32 sm:w-48">${cleanText(c.card_name)}</p></div><p id="price-${c.id}" class="text-[11px] font-black text-[#d4af37]">${formatHKD(c.latest_price_hkd)}</p></div>`;
             });
-            document.getElementById('rank-list').innerHTML = listHtml;
+            rankList.innerHTML = listHtml;
+        }
 
+        function renderNewArrivals(data) {
+            const container = document.getElementById('new-arrivals');
+            let html = "";
             data.forEach(c => {
-                if (lastPrices[c.id] !== undefined && lastPrices[c.id] !== c.latest_price_hkd) {
-                    const el = document.getElementById(c.id === data[0].id ? 'no1-price' : `price-${c.id}`);
-                    if (el) { el.classList.remove('price-flash'); void el.offsetWidth; el.classList.add('price-flash'); }
-                }
-                lastPrices[c.id] = c.latest_price_hkd;
+                html += `
+                    <div class="bento-card p-4 min-w-[140px] flex flex-col items-center gap-3 text-center">
+                        <div class="w-20 h-28 shrink-0">
+                            <img src="${c.url}" class="w-full h-full object-contain drop-shadow-md">
+                        </div>
+                        <div class="space-y-1">
+                            <p class="text-[9px] font-bold text-gray-400 truncate w-24">${cleanText(c.card_name)}</p>
+                            <p class="text-xs font-black text-white">${formatHKD(c.latest_price_hkd)}</p>
+                        </div>
+                    </div>
+                `;
             });
+            container.innerHTML = html;
         }
 
         document.getElementById('expand-btn').addEventListener('click', () => document.getElementById('rank-list').classList.toggle('expanded'));
