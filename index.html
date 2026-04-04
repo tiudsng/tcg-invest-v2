@@ -284,6 +284,10 @@
                     <h1 class="text-base font-black tracking-tighter italic uppercase">TCG</h1>
                     <h1 class="text-base font-black tracking-tighter italic uppercase">INVEST</h1>
                 </div>
+                <!-- 🦞 小龍蝦測試標籤 -->
+                <div id="lobster-test-tag" class="ml-2 px-2 py-1 bg-red-500 text-[10px] font-bold rounded-full animate-bounce">
+                    小龍蝦測試中...
+                </div>
             </div>
 
             <div class="flex items-center gap-1 md:gap-4 overflow-x-auto no-scrollbar">
@@ -458,7 +462,7 @@
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, initializeFirestore, collection, query, orderBy, limit, onSnapshot, doc, setDoc, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { getFirestore, initializeFirestore, collection, query, orderBy, limit, onSnapshot, doc, setDoc, addDoc, serverTimestamp, getDocFromServer } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = { 
             apiKey: "AIzaSyDSwhKXm7KqaHVO2kb2PQ6qmarySPcZyJ0", 
@@ -469,10 +473,43 @@
             appId: "1:122336191579:web:2de07c0acb51b8b24c8b7e",
             firestoreDatabaseId: "ai-studio-dac23e7c-cc41-4b77-8dea-7e8421e03c6a"
         };
+        console.log("Firebase Config in index.html:", firebaseConfig);
         // 使用從 config 中讀取的正確資料庫 ID
         const app = initializeApp(firebaseConfig);
-        const db = initializeFirestore(app, {}, firebaseConfig.firestoreDatabaseId);
+        // 🚀 修正 Firestore 連線問題：啟用長輪詢 (Long Polling)
+        // 並防止「Converting circular structure to JSON」錯誤
+        const db = initializeFirestore(app, {
+            experimentalForceLongPolling: true,
+            useFetchStreams: false,
+            host: "firestore.googleapis.com",
+            ssl: true
+        }, firebaseConfig.firestoreDatabaseId);
         const auth = getAuth(app);
+
+        // 🧪 連線測試
+        async function testFirestore() {
+            try {
+                await getDocFromServer(doc(db, 'test', 'connection'));
+                console.log("✅ Firestore 連線成功 (index.html)");
+            } catch (e) {
+                safeLog("⚠️ Firestore 連線測試失敗", e);
+            }
+        }
+        testFirestore();
+
+        // 🛡️ 安全日誌工具：防止循環引用導致的 JSON 錯誤
+        const safeLog = (msg, obj) => {
+            if (obj && obj.message) {
+                console.error(`${msg}: ${obj.message}`, obj.code || '');
+            } else {
+                console.error(msg, obj);
+            }
+        };
+
+        // ⚠️ 檢查是否為 file:// 協議
+        if (window.location.protocol === 'file:') {
+            alert("⚠️ 偵測到你正在使用 file:// 協議開啟網頁。\n\nFirebase 不支援直接開啟 HTML 檔案。請使用 VS Code 的 Live Server 或將代碼上傳到 GitHub/Vercel 預覽！");
+        }
 
         let currentLeaderboardData = [];
 
@@ -557,7 +594,7 @@
         };
 
         const formatHKD = (val) => new Intl.NumberFormat('zh-HK', { style: 'currency', currency: 'HKD', minimumFractionDigits: 0 }).format(val || 0);
-        const cleanText = (text) => text ? text.replace(/\xe2\x80\x9c/g, '“').replace(/\xe2\x80\x9d/g, '”').replace(/\xe2\x80\x99/g, "’").replace(/\\/g, "").trim() : "";
+        const cleanText = (text) => text ? text.replace(/\\xe2\\x80\\x9c/g, '“').replace(/\\xe2\\x80\\x9d/g, '”').replace(/\\xe2\\x80\\x99/g, "’").replace(/\\/g, "").trim() : "";
 
         // 📊 排行榜摺疊邏輯
         const toggleBtn = document.getElementById('toggle-rankings');
@@ -693,7 +730,7 @@
                 if (data.length === 0) data = SAMPLE_DATA;
                 renderLeaderboard(data);
             }, (error) => {
-                console.error("Firestore Error:", error);
+                safeLog("Firestore Error", error);
                 renderLeaderboard(SAMPLE_DATA);
             });
         };
@@ -775,8 +812,8 @@
                 alert("✅ 價格更新成功！");
                 document.querySelectorAll('#view-admin input').forEach(i => i.value = '');
             } catch (e) {
-                console.error(e);
-                alert("❌ 更新失敗: " + e.message);
+                safeLog("Update Error", e);
+                alert("❌ 更新失敗: " + (e.message || "未知錯誤"));
             }
         };
 
@@ -797,8 +834,8 @@
                 alert("✅ 文章發佈成功！");
                 document.querySelectorAll('#view-admin input, #view-admin textarea').forEach(i => i.value = '');
             } catch (e) {
-                console.error(e);
-                alert("❌ 發佈失敗: " + e.message);
+                safeLog("Post Error", e);
+                alert("❌ 發佈失敗: " + (e.message || "未知錯誤"));
             }
         };
 
@@ -882,4 +919,22 @@
                             </div>
                         </div>
                         <div class="text-right">
-                            <p class="text-base font-black text
+                            <p class="text-base font-black text-[#d4af37]">${formatHKD(c.latest_price_hkd)}</p>
+                            <p class="text-[10px] font-bold text-green-500">+${c.change_percent || '0.0'}%</p>
+                        </div>
+                    </div>
+                `;
+            });
+            rankList.innerHTML = listHtml;
+        }
+
+        window.showCardDetailByIndex = (index) => {
+            const card = currentLeaderboardData[index];
+            if (card) {
+                showCardDetail(card);
+                switchView('detail');
+            }
+        };
+    </script>
+</body>
+</html>
